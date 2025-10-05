@@ -42,10 +42,33 @@ echo "exec budgie-desktop" > "$xinitrc_file"
 # Установка Budgie-desktop, если он не установлен
 if ! dpkg -l | grep -q budgie-desktop; then
  echo "Установка Budgie-desktop..."
- nala install -y xserver-xorg-core xinit budgie-desktop alacritty
+ nala install -y xserver-xorg-core xinit budgie-desktop
 else
  echo "Budgie-desktop уже установлен."
 fi
+
+# Установка файлового менеджера и утилит
+echo "Установка файлового менеджера и утилит..."
+nala install -y \
+    pcmanfm \
+    engrampa
+
+# Установка мультимедиа утилит
+echo "Установка мультимедиа утилит..."
+nala install -y \
+    pulseaudio pulseaudio-utils pavucontrol \
+    playerctl \
+    moc \
+    mpv
+
+# Установка текстовых редакторов
+echo "Установка текстовых редакторов..."
+nala install -y \
+    micro
+
+# Дополнительные скрипты
+source ./wifi-macbookpro.sh
+source ./onlyoffice-install-debian.sh
 
 # Очистка системы
 sudo nala -y autopurge

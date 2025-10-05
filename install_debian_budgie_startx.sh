@@ -53,8 +53,8 @@ echo "Установка файлового менеджера и утилит..
 nala install -y pcmanfm file-roller
 
 # Установка мультимедиа утилит
-echo "Установка мультимедиа утилит..."
-nala install -y pulseaudio pavucontrol playerctl moc mpv
+# echo "Установка мультимедиа утилит..."
+# nala install -y pulseaudio pavucontrol playerctl moc mpv
 
 # Установка текстовых редакторов
 echo "Установка текстовых редакторов..."
@@ -65,8 +65,12 @@ source ./install_wifi-macbookpro.sh
 source ./install-onlyoffice-debian.sh
 source ./install_zen_browser.sh
 
+# Themes
+mkdir /home/$username/.themes
+cd /home/$username/.themes && git clone https://github.com/vinceliuice/Orchis-theme.git && cd Orchis-theme/ && bash ./install.sh -c dark -s compact --tweaks dracula --round 1 && cd
+
 # Очистка системы
-sudo nala -y autopurge
+apt autopurge -y 
 
 # Завершение
 echo "Настройка завершена. Пожалуйста, перезагрузите систему."

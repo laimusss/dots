@@ -42,7 +42,7 @@ echo "exec budgie-desktop" > "$xinitrc_file"
 # Установка пакета budgie-desktop, если он не установлен
 if ! dpkg -l | grep -q budgie-desktop; then
  echo "Установка пакета budgie-desktop..."
- nala install -y xserver-xorg-core xinit budgie-desktop
+ nala install -y xserver-xorg-core xinit budgie-desktop alacritty
 else
  echo "Пакет budgie-desktop уже установлен."
 fi

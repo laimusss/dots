@@ -63,6 +63,7 @@ nala install -y micro
 # Дополнительные скрипты
 source ./install_wifi-macbookpro.sh
 source ./install-onlyoffice-debian.sh
+source ./install_zen_browser.sh
 
 # Очистка системы
 sudo nala -y autopurge

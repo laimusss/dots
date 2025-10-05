@@ -9,9 +9,10 @@ fi
 # Установка Nala, если он не установлен
 if ! command -v nala &> /dev/null; then
  echo "Nala не установлен. Установка Nala..."
- apt update && apt install -y nala && nala fetch
+ apt update && apt install -y nala
 else
  echo "Nala уже установлен."
+ nala fetch
 fi
 
 # Запрос имени пользователя для автоматического входа

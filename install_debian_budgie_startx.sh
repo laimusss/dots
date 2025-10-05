@@ -62,7 +62,7 @@ nala install -y micro
 
 # Установка утилит
 # echo "Установка утилит..."
-nala install -y qbittorrent
+nala install -y fastfetch htop
 
 # Дополнительные скрипты
 source ./install_wifi-macbookpro.sh

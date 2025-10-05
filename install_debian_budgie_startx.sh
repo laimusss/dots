@@ -39,13 +39,16 @@ profile_file="/home/$username/.profile"
 xinitrc_file="/home/$username/.xinitrc"
 echo "exec budgie-desktop" > "$xinitrc_file"
 
-# Установка пакета budgie-desktop, если он не установлен
+# Установка Budgie-desktop, если он не установлен
 if ! dpkg -l | grep -q budgie-desktop; then
- echo "Установка пакета budgie-desktop..."
+ echo "Установка Budgie-desktop..."
  nala install -y xserver-xorg-core xinit budgie-desktop alacritty
 else
- echo "Пакет budgie-desktop уже установлен."
+ echo "Budgie-desktop уже установлен."
 fi
+
+# Очистка системы
+sudo nala -y autopurge
 
 # Завершение
 echo "Настройка завершена. Пожалуйста, перезагрузите систему."

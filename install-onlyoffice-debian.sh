@@ -11,8 +11,8 @@ chmod 644 /tmp/onlyoffice.gpg
 sudo chown root:root /tmp/onlyoffice.gpg
 sudo mv /tmp/onlyoffice.gpg /etc/apt/keyrings/onlyoffice.gpg
 echo 'deb [signed-by=/etc/apt/keyrings/onlyoffice.gpg] https://download.onlyoffice.com/repo/debian squeeze main' | sudo tee -a /etc/apt/sources.list.d/onlyoffice.list
-sudo apt update -y
-sudo apt install -y onlyoffice-desktopeditors
+sudo nala update -y
+sudo nala install -y onlyoffice-desktopeditors
 echo ""
 echo "| OnlyOffice установлен"
 else

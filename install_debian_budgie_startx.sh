@@ -50,7 +50,7 @@ fi
 
 # Установка файлового менеджера и утилит
 echo "Установка файлового менеджера и утилит..."
-nala install -y pcmanfm engrampa
+nala install -y pcmanfm file-roller
 
 # Установка мультимедиа утилит
 echo "Установка мультимедиа утилит..."

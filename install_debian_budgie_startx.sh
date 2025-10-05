@@ -67,8 +67,8 @@ nala install -y \
     micro
 
 # Дополнительные скрипты
-source ./wifi-macbookpro.sh
-source ./onlyoffice-install-debian.sh
+source ./install_wifi-macbookpro.sh
+source ./install-onlyoffice-debian.sh
 
 # Очистка системы
 sudo nala -y autopurge

@@ -49,22 +49,15 @@ fi
 
 # Установка файлового менеджера и утилит
 echo "Установка файлового менеджера и утилит..."
-nala install -y \
-    pcmanfm \
-    engrampa
+nala install -y pcmanfm engrampa
 
 # Установка мультимедиа утилит
 echo "Установка мультимедиа утилит..."
-nala install -y \
-    pulseaudio pulseaudio-utils pavucontrol \
-    playerctl \
-    moc \
-    mpv
+nala install -y pulseaudio pulseaudio-utils pavucontrol playerctl moc mpv
 
 # Установка текстовых редакторов
 echo "Установка текстовых редакторов..."
-nala install -y \
-    micro
+nala install -y micro
 
 # Дополнительные скрипты
 source ./install_wifi-macbookpro.sh

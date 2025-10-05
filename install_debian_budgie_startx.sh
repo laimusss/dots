@@ -42,29 +42,29 @@ echo "exec budgie-desktop" > "$xinitrc_file"
 # Установка Budgie-desktop, если он не установлен
 if ! dpkg -l | grep -q budgie-desktop; then
  echo "Установка Budgie-desktop..."
- apt install -y xserver-xorg-core xinit budgie-desktop alacritty
+ nala install -y xserver-xorg-core xinit budgie-desktop alacritty
 else
  echo "Budgie-desktop уже установлен."
 fi
 
 # Установка файлового менеджера и утилит
 echo "Установка файлового менеджера и утилит..."
-apt install -y pcmanfm engrampa
+nala install -y pcmanfm engrampa
 
 # Установка мультимедиа утилит
 echo "Установка мультимедиа утилит..."
-apt install -y pulseaudio pulseaudio-utils pavucontrol playerctl moc mpv
+nala install -y pulseaudio pulseaudio-utils pavucontrol playerctl moc mpv
 
 # Установка текстовых редакторов
 echo "Установка текстовых редакторов..."
-apt install -y micro
+nala install -y micro
 
 # Дополнительные скрипты
 source ./install_wifi-macbookpro.sh
 source ./install-onlyoffice-debian.sh
 
 # Очистка системы
-sudo apt -y autopurge
+sudo nala -y autopurge
 
 # Завершение
 echo "Настройка завершена. Пожалуйста, перезагрузите систему."

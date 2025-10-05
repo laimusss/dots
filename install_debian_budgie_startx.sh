@@ -54,7 +54,7 @@ nala install -y pcmanfm file-roller
 
 # Установка мультимедиа утилит
 # echo "Установка мультимедиа утилит..."
-# nala install -y pulseaudio pavucontrol playerctl moc mpv
+# nala install -y playerctl moc mpv
 
 # Установка текстовых редакторов
 echo "Установка текстовых редакторов..."
@@ -70,7 +70,7 @@ mkdir /home/$username/.themes
 cd /home/$username/.themes && git clone --depth=1 https://github.com/vinceliuice/Orchis-theme.git && cd Orchis-theme/ && bash ./install.sh -c dark -s compact --tweaks dracula --round 1 && cd
 
 # Очистка системы
-apt autopurge -y 
+nala autopurge -y 
 
 # Завершение и выбор перезагрузки
 echo "Настройка завершена. Пожалуйста, перезагрузите систему."

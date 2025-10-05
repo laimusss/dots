@@ -43,7 +43,7 @@ echo "exec budgie-desktop" > "$xinitrc_file"
 # Установка Budgie-desktop, если он не установлен
 if ! dpkg -l | grep -q budgie-desktop; then
  echo "Установка Budgie-desktop..."
- nala install -y xserver-xorg-core xinit zram-tools budgie-desktop curl alacritty libxcb-cursor0 libxcb-xinerama0
+ nala install -y xserver-xorg-core xinit zram-tools budgie-desktop curl alacritty
 else
  echo "Budgie-desktop уже установлен."
 fi
@@ -72,6 +72,10 @@ source ./install_zen_browser.sh
 # Themes
 mkdir /home/$username/.themes
 cd /home/$username/.themes && git clone --depth=1 https://github.com/vinceliuice/Orchis-theme.git && cd Orchis-theme/ && bash ./install.sh -c dark -s compact --tweaks dracula --round 1 && cd
+
+# Icons
+mkdir /home/$username/.icons
+cd /home/$username/.icons && git clone --depth=1 https://github.com/vinceliuice/Tela-circle-icon-theme.git && cd Tela-circle-icon-theme/ && bash ./install.sh dracula -c && cd
 
 # Очистка системы
 nala autopurge -y 

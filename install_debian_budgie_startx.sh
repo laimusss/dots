@@ -54,11 +54,15 @@ nala install -y pcmanfm file-roller
 
 # Установка мультимедиа утилит
 # echo "Установка мультимедиа утилит..."
-# nala install -y playerctl moc mpv
+nala install -y playerctl moc mpv
 
 # Установка текстовых редакторов
 echo "Установка текстовых редакторов..."
 nala install -y micro
+
+# Установка утилит
+# echo "Установка утилит..."
+nala install -y 
 
 # Дополнительные скрипты
 source ./install_wifi-macbookpro.sh

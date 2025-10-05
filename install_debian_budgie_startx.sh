@@ -54,7 +54,7 @@ nala install -y pcmanfm engrampa
 
 # Установка мультимедиа утилит
 echo "Установка мультимедиа утилит..."
-nala install -y pulseaudio pulseaudio-utils pavucontrol playerctl moc mpv
+nala install -y pulseaudio pavucontrol playerctl moc mpv
 
 # Установка текстовых редакторов
 echo "Установка текстовых редакторов..."

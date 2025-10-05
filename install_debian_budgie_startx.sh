@@ -67,7 +67,7 @@ source ./install_zen_browser.sh
 
 # Themes
 mkdir /home/$username/.themes
-cd /home/$username/.themes && git clone https://github.com/vinceliuice/Orchis-theme.git && cd Orchis-theme/ && bash ./install.sh -c dark -s compact --tweaks dracula --round 1 && cd
+cd /home/$username/.themes && git clone --depth=1 https://github.com/vinceliuice/Orchis-theme.git && cd Orchis-theme/ && bash ./install.sh -c dark -s compact --tweaks dracula --round 1 && cd
 
 # Очистка системы
 apt autopurge -y 

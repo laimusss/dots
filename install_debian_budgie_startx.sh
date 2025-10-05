@@ -43,7 +43,7 @@ echo "exec budgie-desktop" > "$xinitrc_file"
 # Установка Budgie-desktop, если он не установлен
 if ! dpkg -l | grep -q budgie-desktop; then
  echo "Установка Budgie-desktop..."
- nala install -y xserver-xorg-core xinit budgie-desktop curl alacritty
+ nala install -y xserver-xorg-core xinit zram-tools budgie-desktop curl alacritty
 else
  echo "Budgie-desktop уже установлен."
 fi
@@ -62,7 +62,7 @@ nala install -y micro
 
 # Установка утилит
 # echo "Установка утилит..."
-nala install -y 
+nala install -y qbittorrent
 
 # Дополнительные скрипты
 source ./install_wifi-macbookpro.sh

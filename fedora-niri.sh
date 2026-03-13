@@ -127,7 +127,8 @@ fi
 # Шаг 4: Установка базовых инструментов и зависимостей для сборки
 # ----------------------------------------------------------------------
 print_step "Установка базовых инструментов и зависимостей для сборки..."
-sudo dnf groupinstall -y "Development Tools"  # устанавливает gcc, make и пр.
+# Правильный синтаксис для dnf в Fedora 43
+sudo dnf group install -y "Development Tools"
 sudo dnf install -y git curl wget nano pam-devel
 echo ""
 

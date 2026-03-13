@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Скрипт автоматической установки niri + ly (из исходников) + DMS + Alacritty + Nerd Fonts (JetBrains Mono и Fira Code) на Fedora 43 Minimal
+# Скрипт автоматической установки niri + lightdm + DMS + Alacritty + Nerd Fonts (JetBrains Mono и Fira Code) на Fedora 43 Minimal
 # Запускать от имени обычного пользователя (не root), но с правами sudo
 
 set -e  # Прерывать выполнение при ошибке
@@ -37,7 +37,7 @@ if [ "$EUID" -eq 0 ]; then
     exit 1
 fi
 
-print_step "Начинаем установку niri + ly (из исходников) + DMS + Alacritty + Nerd Fonts на Fedora 43 Minimal"
+print_step "Начинаем установку niri + lightdm + DMS + Alacritty + Nerd Fonts на Fedora 43 Minimal"
 echo ""
 
 # ----------------------------------------------------------------------
@@ -124,19 +124,21 @@ else
 fi
 
 # ----------------------------------------------------------------------
-# Шаг 4: Установка базовых инструментов и зависимостей для сборки
+# Шаг 4: Установка базовых инструментов (включая временные для сборки)
 # ----------------------------------------------------------------------
-print_step "Установка базовых инструментов и зависимостей для сборки..."
+print_step "Установка базовых инструментов и временных зависимостей для сборки (если потребуется)..."
 
 # Пытаемся установить группу "Development Tools". Если не получается – ставим пакеты вручную.
 if sudo dnf group install -y "Development Tools" &>/dev/null; then
     print_step "Группа 'Development Tools' успешно установлена."
+    DEVTOOLS_INSTALLED=true
 else
     print_warning "Группа 'Development Tools' не найдена. Устанавливаем необходимые пакеты вручную..."
-    sudo dnf install -y gcc make automake pkgconfig pam-devel kernel-headers
+    sudo dnf install -y gcc make automake pkgconf-pkg-config pam-devel kernel-headers
+    DEVTOOLS_INSTALLED=false
 fi
 
-# Дополнительные пакеты, которые могут пригодиться
+# Дополнительные пакеты, которые могут пригодиться (оставим их)
 sudo dnf install -y git curl wget nano
 echo ""
 
@@ -148,63 +150,49 @@ sudo dnf install -y niri mesa-libEGL
 echo ""
 
 # ----------------------------------------------------------------------
-# Шаг 6: Сборка и установка ly из исходников
+# Шаг 6: Установка lightdm из официального репозитория
 # ----------------------------------------------------------------------
-print_step "Клонирование репозитория ly и сборка из исходников..."
-
-cd /tmp
-# Если папка уже есть, удалим
-rm -rf ly
-git clone https://github.com/fairyglade/ly
-cd ly
-
-# Проверяем, что клонирование прошло успешно и есть Makefile
-if [ ! -f Makefile ]; then
-    print_error "Makefile не найден в репозитории ly."
-    print_error "Содержимое текущей директории:"
-    ls -la
-    print_error "Репозиторий, возможно, изменился. Попробуйте установить ly вручную."
-    print_error "Например, через COPR: sudo dnf copr enable atim/ly && sudo dnf install ly"
-    exit 1
-fi
-
-print_step "Компиляция ly..."
-make
-
-print_step "Установка ly (бинарник и сервисный файл)..."
-sudo make install
-
-# Возвращаемся в исходную директорию
-cd ~
-
-# Проверяем, что бинарник установлен
-if command -v ly &> /dev/null; then
-    print_step "ly успешно собран и установлен."
-else
-    print_error "Ошибка: ly не установился."
-    exit 1
-fi
+print_step "Установка display manager lightdm..."
+sudo dnf install -y lightdm
 echo ""
 
 # ----------------------------------------------------------------------
-# Шаг 7: Включение сервиса ly и отключение других DM
+# Шаг 7: Удаление ненужных пакетов, установленных для сборки (теперь не требуются)
 # ----------------------------------------------------------------------
-print_step "Включение сервиса ly для автозапуска при загрузке..."
+print_step "Удаление временных зависимостей, которые больше не нужны..."
+
+if [ "$DEVTOOLS_INSTALLED" = true ]; then
+    # Если была установлена группа "Development Tools", удаляем её
+    print_warning "Удаляем группу 'Development Tools' (она больше не нужна)..."
+    sudo dnf group remove -y "Development Tools" || print_warning "Не удалось удалить группу (возможно, она используется другими пакетами)."
+else
+    # Удаляем конкретные пакеты, установленные вручную
+    print_warning "Удаляем пакеты сборки: gcc make automake pkgconf-pkg-config pam-devel kernel-headers..."
+    sudo dnf remove -y gcc make automake pkgconf-pkg-config pam-devel kernel-headers || print_warning "Некоторые пакеты не были удалены (возможно, нужны другим приложениям)."
+fi
+
+# Оставляем git, curl, wget, nano — они могут пригодиться
+echo ""
+
+# ----------------------------------------------------------------------
+# Шаг 8: Включение сервиса lightdm и отключение других DM
+# ----------------------------------------------------------------------
+print_step "Включение сервиса lightdm для автозапуска при загрузке..."
 
 # Отключаем другие display manager'ы, если они есть
-for dm in gdm sddm lightdm xdm; do
+for dm in gdm sddm ly xdm; do
     if systemctl is-active --quiet $dm 2>/dev/null; then
         print_warning "Отключаем $dm..."
         sudo systemctl disable $dm
     fi
 done
 
-# Включаем ly
-sudo systemctl enable ly.service
+# Включаем lightdm
+sudo systemctl enable lightdm.service
 echo ""
 
 # ----------------------------------------------------------------------
-# Шаг 8: Установка Alacritty из официальных репозиториев
+# Шаг 9: Установка Alacritty из официальных репозиториев
 # ----------------------------------------------------------------------
 print_step "Установка терминала Alacritty из официальных репозиториев..."
 if sudo dnf install -y alacritty; then
@@ -216,7 +204,7 @@ fi
 echo ""
 
 # ----------------------------------------------------------------------
-# Шаг 9: Установка DankMaterialShell (DMS) через официальный скрипт
+# Шаг 10: Установка DankMaterialShell (DMS) через официальный скрипт
 # ----------------------------------------------------------------------
 print_step "Установка DankMaterialShell через официальный скрипт с GitHub..."
 
@@ -241,7 +229,7 @@ fi
 echo ""
 
 # ----------------------------------------------------------------------
-# Шаг 10: Установка Nerd Fonts (JetBrains Mono и Fira Code) – из COPR, если доступен
+# Шаг 11: Установка Nerd Fonts (JetBrains Mono и Fira Code) – из COPR, если доступен
 # ----------------------------------------------------------------------
 COPR_FONTS_URL="https://copr.fedorainfracloud.org/coprs/skidnik/mononoki/"
 check_url() {
@@ -279,7 +267,7 @@ fi
 echo ""
 
 # ----------------------------------------------------------------------
-# Шаг 11: Настройка конфигурации niri для автозапуска DMS
+# Шаг 12: Настройка конфигурации niri для автозапуска DMS
 # ----------------------------------------------------------------------
 print_step "Настройка автозапуска DMS в niri..."
 
@@ -306,7 +294,7 @@ fi
 echo ""
 
 # ----------------------------------------------------------------------
-# Шаг 12: Создание базовой конфигурации для Alacritty с Nerd Font
+# Шаг 13: Создание базовой конфигурации для Alacritty с Nerd Font
 # ----------------------------------------------------------------------
 print_step "Создание базовой конфигурации для Alacritty..."
 mkdir -p ~/.config/alacritty
@@ -363,7 +351,7 @@ fi
 echo ""
 
 # ----------------------------------------------------------------------
-# Шаг 13: Финальные сообщения
+# Шаг 14: Финальные сообщения
 # ----------------------------------------------------------------------
 print_step "Установка завершена!"
 echo ""
@@ -373,7 +361,7 @@ echo -e "${GREEN}╚════════════════════
 echo ""
 echo "Что было установлено:"
 echo "  ✓ niri (из официального репозитория Fedora)"
-echo "  ✓ ly (собран из исходников)"
+echo "  ✓ lightdm (display manager)"
 echo "  ✓ Alacritty (из официальных репозиториев Fedora)"
 echo "  ✓ DankMaterialShell (через официальный скрипт с GitHub)"
 if fc-list | grep -i "nerd" | grep -E "JetBrains|Fira" > /dev/null; then
@@ -385,7 +373,7 @@ else
 fi
 echo ""
 echo "Что нужно сделать после перезагрузки:"
-echo "  1. При входе в ly выберите сессию 'niri' (обычно в углу экрана)"
+echo "  1. При входе в lightdm выберите сессию 'niri' (обычно в углу экрана)"
 echo "  2. DMS должен запуститься автоматически"
 echo "  3. В терминале Alacritty настроен шрифт с иконками (если установлен)"
 echo ""
@@ -397,7 +385,7 @@ echo ""
 echo "Файлы конфигурации:"
 echo "  • niri: ~/.config/niri/config.kdl"
 echo "  • Alacritty: ~/.config/alacritty/alacritty.toml"
-echo "  • ly: /etc/ly/config.ini"
+echo "  • lightdm: /etc/lightdm/lightdm.conf"
 echo ""
 echo "Полезные ссылки:"
 echo "  • DMS GitHub: https://github.com/AvengeMedia/DankMaterialShell"

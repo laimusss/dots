@@ -54,6 +54,34 @@ check_url() {
 print_step "Начинаем установку niri + ly + DMS + Alacritty + Nerd Fonts (JetBrains Mono и Fira Code) на Fedora 43 Minimal"
 echo ""
 
+# ----------------------------------------------------------------------
+# Шаг 0: Замена зеркал на Яндекс (для ускорения и обхода блокировок)
+# ----------------------------------------------------------------------
+print_step "Настройка зеркал Fedora на mirror.yandex.ru..."
+
+# Проверяем доступность Яндекс-зеркала
+YANDEX_TEST="https://mirror.yandex.ru/fedora/linux/releases/43/Everything/x86_64/os/"
+if curl --output /dev/null --silent --head --fail --max-time 10 "$YANDEX_TEST"; then
+    print_step "Яндекс-зеркало доступно. Выполняем замену..."
+
+    # Создаём резервные копии оригинальных .repo файлов
+    sudo cp /etc/yum.repos.d/fedora.repo /etc/yum.repos.d/fedora.repo.backup 2>/dev/null || true
+    sudo cp /etc/yum.repos.d/fedora-updates.repo /etc/yum.repos.d/fedora-updates.repo.backup 2>/dev/null || true
+
+    # Заменяем baseurl в fedora.repo
+    sudo sed -i 's|^metalink=|#metalink=|g' /etc/yum.repos.d/fedora.repo
+    sudo sed -i 's|^#baseurl=http://download.example/pub/fedora/linux|baseurl=https://mirror.yandex.ru/fedora/linux|g' /etc/yum.repos.d/fedora.repo
+
+    # Заменяем baseurl в fedora-updates.repo
+    sudo sed -i 's|^metalink=|#metalink=|g' /etc/yum.repos.d/fedora-updates.repo
+    sudo sed -i 's|^#baseurl=http://download.example/pub/fedora/linux|baseurl=https://mirror.yandex.ru/fedora/linux|g' /etc/yum.repos.d/fedora-updates.repo
+
+    print_step "Зеркала успешно заменены на mirror.yandex.ru."
+else
+    print_warning "Яндекс-зеркало недоступно. Оставляем стандартные зеркала."
+fi
+echo ""
+
 # Шаг 1: Обновление системы
 print_step "Обновление системы..."
 sudo dnf upgrade --refresh -y
@@ -93,7 +121,7 @@ fi
 print_step "Проблема с геоблоком Cisco OpenH264 обработана"
 echo ""
 
-# Шаг 2: Проверка доступности пакета niri в официальных репозиториях Fedora
+# Шаг 2: Проверка наличия пакета niri в официальных репозиториях Fedora
 print_step "Проверка наличия пакета niri в официальных репозиториях Fedora..."
 if dnf list available niri &>/dev/null; then
     print_step "Пакет niri найден в официальных репозиториях."

@@ -127,9 +127,17 @@ fi
 # Шаг 4: Установка базовых инструментов и зависимостей для сборки
 # ----------------------------------------------------------------------
 print_step "Установка базовых инструментов и зависимостей для сборки..."
-# Правильный синтаксис для dnf в Fedora 43
-sudo dnf group install -y "Development Tools"
-sudo dnf install -y git curl wget nano pam-devel
+
+# Пытаемся установить группу "Development Tools". Если не получается – ставим пакеты вручную.
+if sudo dnf group install -y "Development Tools" &>/dev/null; then
+    print_step "Группа 'Development Tools' успешно установлена."
+else
+    print_warning "Группа 'Development Tools' не найдена. Устанавливаем необходимые пакеты вручную..."
+    sudo dnf install -y gcc make automake pkgconfig pam-devel kernel-headers
+fi
+
+# Дополнительные пакеты, которые могут пригодиться
+sudo dnf install -y git curl wget nano
 echo ""
 
 # ----------------------------------------------------------------------

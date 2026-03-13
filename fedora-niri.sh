@@ -37,6 +37,20 @@ if [ "$EUID" -eq 0 ]; then
     exit 1
 fi
 
+# Функция проверки доступности URL
+check_url() {
+    local url=$1
+    local name=$2
+    print_step "Проверка доступности $name ($url)..."
+    if curl --output /dev/null --silent --head --fail --max-time 10 "$url"; then
+        print_step "$name доступен."
+        return 0
+    else
+        print_error "$name НЕ доступен. Возможно, он заблокирован в вашем регионе."
+        return 1
+    fi
+}
+
 print_step "Начинаем установку niri + ly + DMS + Alacritty + Nerd Fonts (JetBrains Mono и Fira Code) на Fedora 43 Minimal"
 echo ""
 
@@ -79,32 +93,68 @@ fi
 print_step "Проблема с геоблоком Cisco OpenH264 обработана"
 echo ""
 
-# Шаг 2: Установка базовых инструментов
+# Шаг 2: Проверка доступности COPR репозиториев
+print_step "Проверка доступности COPR репозиториев..."
+
+COPR_NIRI_URL="https://copr.fedorainfracloud.org/coprs/yalter/niri/"
+COPR_LY_URL="https://copr.fedorainfracloud.org/coprs/atim/ly/"
+COPR_FONTS_URL="https://copr.fedorainfracloud.org/coprs/skidnik/mononoki/"
+
+check_url "$COPR_NIRI_URL" "COPR yalter/niri" || {
+    print_error "Репозиторий yalter/niri недоступен. Без него установка niri невозможна."
+    echo ""
+    echo "Возможные решения:"
+    echo "  1. Настройте VPN или прокси для доступа к COPR и запустите скрипт заново."
+    echo "  2. Установите niri вручную из исходников:"
+    echo "     git clone https://github.com/YaLTeR/niri"
+    echo "     cd niri"
+    echo "     # Следуйте инструкциям в README.md (потребуются дополнительные зависимости)"
+    echo ""
+    exit 1
+}
+
+check_url "$COPR_LY_URL" "COPR atim/ly" || {
+    print_warning "Репозиторий atim/ly недоступен. ly будет установлен из исходников (альтернативный метод)."
+    # Здесь можно добавить установку ly из исходников, но для простоты продолжим, а позже при установке dnf ly может упасть.
+    # Лучше выйти с предложением.
+    print_error "Рекомендуется обеспечить доступ к COPR для установки ly."
+    exit 1
+}
+
+check_url "$COPR_FONTS_URL" "COPR skidnik/mononoki" || {
+    print_warning "Репозиторий skidnik/mononoki (Nerd Fonts) недоступен. Шрифты не будут установлены."
+    # Можно продолжить без шрифтов, они не критичны для работы niri.
+    # Но лучше предупредить.
+}
+
+echo ""
+
+# Шаг 3: Установка базовых инструментов
 print_step "Установка базовых инструментов..."
 sudo dnf install -y nano git curl wget
 echo ""
 
-# Шаг 3: Включение репозитория COPR для niri
+# Шаг 4: Включение репозитория COPR для niri
 print_step "Включение репозитория yalter/niri (официальный репозиторий niri)..."
 sudo dnf copr enable -y yalter/niri
 echo ""
 
-# Шаг 4: Установка niri и необходимых зависимостей
+# Шаг 5: Установка niri и необходимых зависимостей
 print_step "Установка niri и библиотек..."
 sudo dnf install -y niri mesa-libEGL
 echo ""
 
-# Шаг 5: Включение репозитория COPR для ly
+# Шаг 6: Включение репозитория COPR для ly
 print_step "Включение репозитория atim/ly (для установки display manager ly)..."
 sudo dnf copr enable -y atim/ly
 echo ""
 
-# Шаг 6: Установка ly
+# Шаг 7: Установка ly
 print_step "Установка display manager ly..."
 sudo dnf install -y ly
 echo ""
 
-# Шаг 7: Включение сервиса ly
+# Шаг 8: Включение сервиса ly
 print_step "Включение сервиса ly для автозапуска при загрузке..."
 
 # Отключаем другие display manager'ы, если они есть
@@ -119,7 +169,7 @@ done
 sudo systemctl enable ly.service
 echo ""
 
-# Шаг 8: Установка Alacritty (терминал) из официальных репозиториев Fedora
+# Шаг 9: Установка Alacritty (терминал) из официальных репозиториев Fedora
 print_step "Установка терминала Alacritty из официальных репозиториев..."
 if sudo dnf install -y alacritty; then
     print_step "Alacritty успешно установлен из официальных репозиториев Fedora"
@@ -129,7 +179,7 @@ else
 fi
 echo ""
 
-# Шаг 9: Установка DankMaterialShell (DMS) через официальный скрипт
+# Шаг 10: Установка DankMaterialShell (DMS) через официальный скрипт
 print_step "Установка DankMaterialShell через официальный скрипт с GitHub..."
 
 # Проверяем доступность официального скрипта
@@ -152,34 +202,38 @@ else
 fi
 echo ""
 
-# Шаг 10: Установка Nerd Fonts (только JetBrains Mono и Fira Code)
-print_step "Установка Nerd Fonts (JetBrains Mono и Fira Code) для корректного отображения иконок и кириллицы..."
+# Шаг 11: Установка Nerd Fonts (только JetBrains Mono и Fira Code) – если репозиторий доступен
+if check_url "$COPR_FONTS_URL" "COPR skidnik/mononoki" --quiet; then
+    print_step "Установка Nerd Fonts (JetBrains Mono и Fira Code) для корректного отображения иконок и кириллицы..."
 
-# Включаем COPR репозиторий с Nerd Fonts
-print_step "Включение репозитория skidnik/mononoki (содержит Nerd Fonts)..."
-sudo dnf copr enable -y skidnik/mononoki
+    # Включаем COPR репозиторий с Nerd Fonts
+    print_step "Включение репозитория skidnik/mononoki (содержит Nerd Fonts)..."
+    sudo dnf copr enable -y skidnik/mononoki
 
-# Устанавливаем только JetBrains Mono Nerd Font и Fira Code Nerd Font
-print_step "Установка пакетов jetbrains-mono-nerd-ttf-fonts и fira-code-nerd-ttf-fonts..."
-sudo dnf install -y \
-    jetbrains-mono-nerd-ttf-fonts \
-    fira-code-nerd-ttf-fonts
+    # Устанавливаем только JetBrains Mono Nerd Font и Fira Code Nerd Font
+    print_step "Установка пакетов jetbrains-mono-nerd-ttf-fonts и fira-code-nerd-ttf-fonts..."
+    sudo dnf install -y \
+        jetbrains-mono-nerd-ttf-fonts \
+        fira-code-nerd-ttf-fonts
 
-# Обновляем кэш шрифтов
-print_step "Обновление кэша шрифтов..."
-fc-cache -fv
+    # Обновляем кэш шрифтов
+    print_step "Обновление кэша шрифтов..."
+    fc-cache -fv
 
-# Проверяем успешность установки
-if fc-list | grep -i "nerd" | grep -E "JetBrains|Fira" > /dev/null; then
-    print_step "Nerd Fonts успешно установлены!"
-    print_step "Доступные Nerd Fonts:"
-    fc-list | grep -i "nerd" | grep -E "JetBrains|Fira" | cut -d: -f2 | sort -u
+    # Проверяем успешность установки
+    if fc-list | grep -i "nerd" | grep -E "JetBrains|Fira" > /dev/null; then
+        print_step "Nerd Fonts успешно установлены!"
+        print_step "Доступные Nerd Fonts:"
+        fc-list | grep -i "nerd" | grep -E "JetBrains|Fira" | cut -d: -f2 | sort -u
+    else
+        print_warning "Nerd Fonts не найдены после установки. Проверьте логи."
+    fi
 else
-    print_warning "Nerd Fonts не найдены после установки. Проверьте логи."
+    print_warning "Пропускаем установку Nerd Fonts из-за недоступности репозитория."
 fi
 echo ""
 
-# Шаг 11: Настройка конфигурации niri для автозапуска DMS
+# Шаг 12: Настройка конфигурации niri для автозапуска DMS
 print_step "Настройка автозапуска DMS в niri..."
 
 # Создаем директорию для конфигурации
@@ -204,7 +258,7 @@ else
 fi
 echo ""
 
-# Шаг 12: Создание базовой конфигурации для Alacritty с JetBrains Mono Nerd Font
+# Шаг 13: Создание базовой конфигурации для Alacritty с JetBrains Mono Nerd Font
 print_step "Создание базовой конфигурации для Alacritty с JetBrains Mono Nerd Font..."
 mkdir -p ~/.config/alacritty
 if [ ! -f ~/.config/alacritty/alacritty.toml ]; then
@@ -251,7 +305,7 @@ else
 fi
 echo ""
 
-# Шаг 13: Финальные сообщения
+# Шаг 14: Финальные сообщения
 print_step "Установка завершена!"
 echo ""
 echo -e "${GREEN}╔════════════════════════════════════════════════════════════╗${NC}"
@@ -263,14 +317,18 @@ echo "  ✓ niri (композитор Wayland)"
 echo "  ✓ ly (display manager из COPR)"
 echo "  ✓ Alacritty (из официальных репозиториев Fedora)"
 echo "  ✓ DankMaterialShell (через официальный скрипт с GitHub)"
-echo "  ✓ Nerd Fonts (с поддержкой кириллицы):"
-echo "    - JetBrains Mono Nerd Font"
-echo "    - Fira Code Nerd Font"
+if fc-list | grep -i "nerd" | grep -E "JetBrains|Fira" > /dev/null; then
+    echo "  ✓ Nerd Fonts (с поддержкой кириллицы):"
+    echo "    - JetBrains Mono Nerd Font"
+    echo "    - Fira Code Nerd Font"
+else
+    echo "  ✗ Nerd Fonts не установлены (репозиторий недоступен)"
+fi
 echo ""
 echo "Что нужно сделать после перезагрузки:"
 echo "  1. При входе в ly выберите сессию 'niri' (обычно в углу экрана)"
 echo "  2. DMS должен запуститься автоматически"
-echo "  3. В терминале Alacritty уже настроен JetBrainsMono Nerd Font"
+echo "  3. В терминале Alacritty уже настроен JetBrainsMono Nerd Font (если шрифты установлены)"
 echo ""
 echo "Горячие клавиши niri (по умолчанию):"
 echo "  • Super + T - открыть терминал (Alacritty)"

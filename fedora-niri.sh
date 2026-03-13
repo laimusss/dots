@@ -158,6 +158,16 @@ rm -rf ly
 git clone https://github.com/fairyglade/ly
 cd ly
 
+# Проверяем, что клонирование прошло успешно и есть Makefile
+if [ ! -f Makefile ]; then
+    print_error "Makefile не найден в репозитории ly."
+    print_error "Содержимое текущей директории:"
+    ls -la
+    print_error "Репозиторий, возможно, изменился. Попробуйте установить ly вручную."
+    print_error "Например, через COPR: sudo dnf copr enable atim/ly && sudo dnf install ly"
+    exit 1
+fi
+
 print_step "Компиляция ly..."
 make
 

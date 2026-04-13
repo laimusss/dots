@@ -33,12 +33,10 @@ PACKAGES=(
     vim
     micro
     dialog
-    bc
 
     # ═══ ОКОННЫЙ МЕНЕДЖЕР ═══
     i3
     i3lock
-    i3status
 
     # ═══ ТЕРМИНАЛ И УТИЛИТЫ ═══
     alacritty
@@ -74,11 +72,6 @@ PACKAGES=(
     bluez
     blueman
 
-    # ═══ ЭНЕРГОПОТРЕБЛЕНИЕ ═══
-    thermald
-    tlp
-    tlp-rdw
-
     # ═══ МОНИТОРИНГ ═══
     lm-sensors
     htop
@@ -97,7 +90,7 @@ PACKAGES=(
     # ═══ ФОНТЫ ═══
     fonts-font-awesome
     fonts-firacode
-    fonts-noto-color-emoji
+    fonts-noto
 
     # ═══ АРХИВАТОРЫ ═══
     p7zip-full
@@ -136,61 +129,10 @@ echo "⚙️ Включение служб..."
 
 systemctl enable NetworkManager
 systemctl enable bluetooth
-systemctl enable tlp
-systemctl enable thermald
 systemctl enable emptty@tty8
 
 systemctl start NetworkManager
 systemctl start bluetooth
-systemctl start tlp
-systemctl start thermald
-
-# ═══════════════════════════════════════════════════════════════
-#  XORG КОНФИГ
-# ═══════════════════════════════════════════════════════════════
-
-echo ""
-echo "🖥️ Настройка Xorg..."
-
-mkdir -p /etc/X11/xorg.conf.d
-
-cat > /etc/X11/xorg.conf.d/20-amdgpu.conf << 'EOF'
-Section "Device"
-    Identifier "AMD Graphics"
-    Driver "amdgpu"
-    Option "TearFree" "true"
-    Option "DRI" "3"
-EndSection
-EOF
-
-cat > /etc/X11/xorg.conf.d/30-keyboard.conf << 'EOF'
-Section "InputClass"
-    Identifier "keyboard defaults"
-    MatchIsKeyboard "on"
-    Option "XkbLayout" "us,ru"
-    Option "XkbOptions" "grp:alt_shift_toggle"
-EndSection
-EOF
-
-# ═══════════════════════════════════════════════════════════════
-#  TLP КОНФИГ
-# ═══════════════════════════════════════════════════════════════
-
-echo ""
-echo "⚡ Настройка TLP..."
-
-mkdir -p /etc/tlp.d
-
-cat > /etc/tlp.d/99-t495.conf << 'EOF'
-CPU_SCALING_GOVERNOR_ON_BAT=schedutil
-CPU_SCALING_GOVERNOR_ON_AC=performance
-RADEON_DPM_PERF_LEVEL_ON_BAT=low
-RADEON_DPM_PERF_LEVEL_ON_AC=auto
-SATA_ALPM_ON_BAT=min_power
-USB_AUTOSUSPEND=1
-EOF
-
-tlp start
 
 # ═══════════════════════════════════════════════════════════════
 #  ТЕМЫ И ИКОНКИ

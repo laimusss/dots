@@ -23,6 +23,7 @@ echo "📦 Установка пакетов..."
 
 PACKAGES=(
     # ═══ УТИЛИТЫ ═══
+    xerver-xorg-core
     x11-utils
     xdg-utils
     xdg-user-dirs
@@ -62,8 +63,6 @@ PACKAGES=(
 
     # ═══ СЕТЬ ═══
     network-manager
-    network-manager-gnome
-    nm-applet
     iwd
     firmware-atheros
     firmware-realtek
@@ -94,9 +93,6 @@ PACKAGES=(
 
     # ═══ ФАЙЛЫ ═══
     ntfs-3g
-    exfat-fuse
-    exfat-utils
-    fuse3
     udiskie
 
     # ═══ ЯРКОСТЬ ═══

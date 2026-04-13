@@ -114,6 +114,7 @@ PACKAGES=(
     lxappearance
     gtk2-engines
     gtk3-nocsd
+    sassc
     pcmanfm
     gvfs-backends
     gvfs-fuse

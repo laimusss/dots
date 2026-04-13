@@ -16,7 +16,6 @@ apt update -y
 echo "📦 Установка пакетов..."
 apt install -y \
     sway \
-    wayland \
     wofi \
     alacritty \
     lxappearance \
@@ -25,7 +24,7 @@ apt install -y \
     pipewire pipewire-pulse wireplumber pavucontrol \
     bluez \
     swaybg swayidle swaylock \
-    mako grim wl-clipboard bemenu \
+    grim wl-clipboard bemenu \
     waybar unzip playerctl xdg-user-dirs \
     fonts-font-awesome fonts-firacode \
     curl ffmpeg mpv micro dialog

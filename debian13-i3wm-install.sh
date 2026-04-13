@@ -138,7 +138,6 @@ systemctl enable bluetooth
 systemctl enable tlp
 systemctl enable thermald
 systemctl enable emptty@tty8
-systemctl mask bluetooth
 
 systemctl start NetworkManager
 systemctl start bluetooth

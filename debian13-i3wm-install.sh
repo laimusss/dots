@@ -36,42 +36,58 @@ systemctl enable --now bluetooth emptty@tty8
 
 echo "📁 Настройка пользовательских директорий..."
 if [ "$ORIGINAL_USER" = "root" ]; then
-    echo "⚠️  Предупреждение: Скрипт запущен напрямую от root. Стандартные папки будут созданы в /root."
+    echo "⚠️  Предупреждение: Скрипт запущен напрямую от root. Стандартные папки будут созданы в 
+/root."
     xdg-user-dirs-update --force
 else
     echo "👤 Создание директорий для пользователя: $ORIGINAL_USER"
     sudo -u "$ORIGINAL_USER" xdg-user-dirs-update --force
 fi
 
-# Themes
-# Путь к директории
-themes_dir="/home/$username/.themes"
+# 🎨 Установка тем и иконок
+echo ""
+echo "🎨 Установка тем и иконок..."
 
-# Проверяем, существует ли директория, и если нет — создаём её
+# === THEMES ===
+themes_dir="/home/$ORIGINAL_USER/.themes"
+
 if [ ! -d "$themes_dir" ]; then
-    echo "Директория $themes_dir не найдена. Создаём..."
+    echo "📁 Создание директории тем: $themes_dir"
     mkdir -p "$themes_dir"
-    echo "Директория $themes_dir успешно создана."
 else
-    echo "Директория $themes_dir уже существует."
+    echo "✅ Директория $themes_dir уже существует."
 fi
-cd /home/$USER/.themes && git clone --depth=1 https://github.com/vinceliuice/Orchis-theme.git && cd Orchis-theme/ && bash ./install.sh -c dark -s compact --tweaks dracula --round 1 && cd
 
-# Icons
-# Путь к директории
-icons_dir="/home/$username/.icons"
+echo "⬇️  Клонирование репозитория Orchis theme..."
+cd "$themes_dir" || exit 1
+git clone --depth=1 https://github.com/vinceliuice/Orchis-theme.git
+cd Orchis-theme/ || exit 1
+bash ./install.sh -c dark -s compact --tweaks dracula --round 1
 
-# Проверяем, существует ли директория, и если нет — создаём её
+# Возвращаемся в домашнюю директорию
+cd /home/"$ORIGINAL_USER" || exit 1
+
+# === ICONS ===
+icons_dir="/home/$ORIGINAL_USER/.icons"
+
 if [ ! -d "$icons_dir" ]; then
-    echo "Директория $icons_dir не найдена. Создаём..."
-    mkdir -p "$themes_dir"
-    echo "Директория $icons_dir успешно создана."
+    echo "📁 Создание директории иконок: $icons_dir"
+    mkdir -p "$icons_dir"
 else
-    echo "Директория $icons_dir уже существует."
+    echo "✅ Директория $icons_dir уже существует."
 fi
-cd /home/$USER/.icons && git clone --depth=1 https://github.com/vinceliuice/Tela-circle-icon-theme.git && cd Tela-circle-icon-theme/ && bash ./install.sh dracula -c && cd
 
-echo "Themes & Icons Installed!"
+echo "⬇️  Клонирование репозитория Tela-circle icons..."
+cd "$icons_dir" || exit 1
+git clone --depth=1 https://github.com/vinceliuice/Tela-circle-icon-theme.git
+cd Tela-circle-icon-theme/ || exit 1
+bash ./install.sh dracula -c
+
+# Возвращаемся в домашнюю директорию
+cd /home/"$ORIGINAL_USER" || exit 1
+
+echo ""
+echo "🎉 Themes & Icons установлены!"
 
 echo ""
 echo "✅ Установка успешно завершена!"

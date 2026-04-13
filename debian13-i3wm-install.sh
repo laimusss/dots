@@ -23,7 +23,7 @@ echo "📦 Установка пакетов..."
 
 PACKAGES=(
     # ═══ УТИЛИТЫ ═══
-    xerver-xorg-core
+    xserver-xorg-core
     x11-utils
     xdg-utils
     xdg-user-dirs
@@ -54,7 +54,6 @@ PACKAGES=(
     xserver-xorg-video-amdgpu
     mesa-vulkan-drivers
     libgl1-mesa-dri
-    libgl1-mesa-glx
     va-driver-all
     vainfo
 
@@ -63,10 +62,6 @@ PACKAGES=(
 
     # ═══ СЕТЬ ═══
     network-manager
-    iwd
-    firmware-atheros
-    firmware-realtek
-    sof-firmware
 
     # ═══ АУДИО ═══
     pipewire
@@ -83,9 +78,6 @@ PACKAGES=(
     thermald
     tlp
     tlp-rdw
-    cpufrequtils
-    acpi-support
-    acpi
 
     # ═══ МОНИТОРИНГ ═══
     lm-sensors
@@ -97,10 +89,6 @@ PACKAGES=(
 
     # ═══ ЯРКОСТЬ ═══
     brightnessctl
-
-    # ═══ УВЕДОМЛЕНИЯ ═══
-    libnotify-bin
-    notification-daemon
 
     # ═══ ПАРОЛИ ═══
     gnome-keyring

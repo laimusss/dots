@@ -17,21 +17,22 @@ echo "📦 Установка пакетов..."
 apt install -y \
     xserver-xorg-core \
     xinit \
+    xutils \
     i3 \
     lxappearance \
-    thunar thunar-archive-plugin \
+    pcmanfm \
     gvfs-backends arandr xfce4-power-manager \
     alacritty \
     pipewire pipewire-pulse wireplumber pavucontrol \
     bluez \
     feh \
-    rofi dunst polybar picom unzip playerctl scrot xdg-user-dirs \
+    rofi dunst polybar picom playerctl scrot xdg-user-dirs \
     fonts-font-awesome fonts-firacode \
     emptty \
     curl ffmpeg mpv micro dialog
 
 echo "🔌 Включение и запуск служб..."
-systemctl enable --now bluetooth pipewire pipewire-pulse wireplumber emptty
+systemctl enable --now bluetooth pipewire-pulse wireplumber emptty@tty8
 
 echo "📁 Настройка пользовательских директорий..."
 if [ "$ORIGINAL_USER" = "root" ]; then

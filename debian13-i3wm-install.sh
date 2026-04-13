@@ -10,6 +10,9 @@ fi
 # Определяем оригинального пользователя (если запуск через sudo)
 ORIGINAL_USER="${SUDO_USER:-$(whoami)}"
 
+# Определяем директорию, где находится сам скрипт
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 echo "🔄 Обновление списков пакетов..."
 apt update -y
 
@@ -89,9 +92,23 @@ cd /home/"$ORIGINAL_USER" || exit 1
 echo ""
 echo "🎉 Themes & Icons установлены!"
 
+# 📋 Копирование конфигурационных файлов
+echo ""
+echo "📋 Копирование конфигурационных файлов..."
+
+if [ -d "$SCRIPT_DIR/.config" ]; then
+    echo "📂 Найдена папка .config в директории скрипта: $SCRIPT_DIR/.config"
+    if [ "$ORIGINAL_USER" = "root" ]; then
+        cp -rf "$SCRIPT_DIR/.config" /root/
+        echo "✅ Конфигурации скопированы в /root/.config/"
+    else
+        cp -rf "$SCRIPT_DIR/.config" /home/"$ORIGINAL_USER"/
+        echo "✅ Конфигурации скопированы в /home/$ORIGINAL_USER/.config/"
+    fi
+else
+    echo "⚠️  Папка .config не найдена в директории скрипта: $SCRIPT_DIR"
+    echo "   Пропускаем копирование конфигураций."
+fi
+
 echo ""
 echo "✅ Установка успешно завершена!"
-echo "💡 Следующие шаги:"
-echo "   1. Скопируйте конфигурационные файлы в ~/.config/ (i3, picom, polybar, dunst и т.д.)"
-echo "   2. Убедитесь, что lightdm использует GTK-греетер: sudo dpkg-reconfigure lightdm"
-echo "   3. Перезагрузите систему: sudo reboot"

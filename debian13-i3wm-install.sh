@@ -55,7 +55,7 @@ if [ ! -d "$themes_dir" ]; then
 else
     echo "Директория $themes_dir уже существует."
 fi
-cd /home/$USER/.themes && git clone --depth=1 https://github.com/vinceliuice/Orchis-theme.git && cd Orchis-theme/ && bash ./install.sh -c dark -s compact --tweaks dracula --round 3 && cd
+cd /home/$USER/.themes && git clone --depth=1 https://github.com/vinceliuice/Orchis-theme.git && cd Orchis-theme/ && bash ./install.sh -c dark -s compact --tweaks dracula --round 1 && cd
 
 # Icons
 # Путь к директории

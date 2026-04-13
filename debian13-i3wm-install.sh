@@ -66,7 +66,7 @@ PACKAGES=(
     iwd
     firmware-atheros
     firmware-realtek
-    firmware-sof-audio
+    sof-firmware
 
     # ═══ АУДИО ═══
     pipewire

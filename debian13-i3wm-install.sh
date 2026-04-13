@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# 🔒 Проверка прав
 if [ "$(id -u)" -ne 0 ]; then
     echo "❌ Запустите с правами root: sudo bash $0"
     exit 1
@@ -13,173 +12,151 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 echo "🔄 Проверка non-free репозитория..."
 if ! grep -q "non-free" /etc/apt/sources.list /etc/apt/sources.list.d/*.list 2>/dev/null; then
     echo "deb http://deb.debian.org/debian $(cat /etc/debian_version | cut -d. -f1) main non-free 
-non-free-firmware" \
-        >> /etc/apt/sources.list
+non-free-firmware" >> /etc/apt/sources.list
     echo "✅ Добавлен non-free репозиторий"
 fi
 
 echo "🔄 Обновление..."
 apt update -y
 
-echo "📦 Установка базовых пакетов..."
+echo "📦 Установка пакетов..."
 
-apt install -y \
-    # ═══ X11 ═══
-    xorg \
-    x11-utils \
-    xdg-utils \
-    xdg-user-dirs \
-    \
+PACKAGES=(
+    # ═══ УТИЛИТЫ ═══
+    x11-utils
+    xdg-utils
+    xdg-user-dirs
+    curl
+    wget
+    git
+    vim
+    micro
+    dialog
+    bc
 
     # ═══ ОКОННЫЙ МЕНЕДЖЕР ═══
-    i3 \
-    i3lock \
-    i3status \
-    i3status \
-    \
+    i3
+    i3lock
+    i3status
 
     # ═══ ТЕРМИНАЛ И УТИЛИТЫ ═══
-    alacritty \
-    rofi \
-    dunst \
-    polybar \
-    picom \
-    scrot \
-    feh \
-    playerctl \
-    curl \
-    wget \
-    git \
-    vim \
-    micro \
-    dialog \
-    bc \
-    \
+    alacritty
+    rofi
+    dunst
+    polybar
+    picom
+    scrot
+    feh
+    playerctl
 
     # ═══ ГРАФИКА AMD VEGA 8 ═══
-    xserver-xorg-video-amdgpu \
-    mesa-vulkan-drivers \
-    libgl1-mesa-dri \
-    libgl1-mesa-glx \
-    va-driver-all \
-    vainfo \
-    \
+    xserver-xorg-video-amdgpu
+    mesa-vulkan-drivers
+    libgl1-mesa-dri
+    libgl1-mesa-glx
+    va-driver-all
+    vainfo
 
     # ═══ ВВОД ═══
-    xserver-xorg-input-libinput \
-    \
+    xserver-xorg-input-libinput
 
-    # ═══ СЕТЬ (non-free firmware) ═══
-    network-manager \
-    network-manager-gnome \
-    nm-applet \
-    iwd \
-    firmware-atheros \
-    firmware-realtek \
-    firmware-sof-audio \
-    \
+    # ═══ СЕТЬ ═══
+    network-manager
+    network-manager-gnome
+    nm-applet
+    iwd
+    firmware-atheros
+    firmware-realtek
+    firmware-sof-audio
 
     # ═══ АУДИО ═══
-    pipewire \
-    pipewire-pulse \
-    wireplumber \
-    pavucontrol \
-    alsa-utils \
-    \
+    pipewire
+    pipewire-pulse
+    wireplumber
+    pavucontrol
+    alsa-utils
 
     # ═══ BLUETOOTH ═══
-    bluez \
-    blueman \
-    \
+    bluez
+    blueman
 
     # ═══ ЭНЕРГОПОТРЕБЛЕНИЕ ═══
-    thermald \
-    tlp \
-    tlp-rdw \
-    cpufrequtils \
-    acpi-support \
-    acpi \
-    \
+    thermald
+    tlp
+    tlp-rdw
+    cpufrequtils
+    acpi-support
+    acpi
 
     # ═══ МОНИТОРИНГ ═══
-    lm-sensors \
-    htop \
-    \
+    lm-sensors
+    htop
 
     # ═══ ФАЙЛЫ ═══
-    ntfs-3g \
-    exfat-fuse \
-    exfat-utils \
-    fuse3 \
-    udiskie \
-    \
+    ntfs-3g
+    exfat-fuse
+    exfat-utils
+    fuse3
+    udiskie
 
     # ═══ ЯРКОСТЬ ═══
-    brightnessctl \
-    \
+    brightnessctl
 
     # ═══ УВЕДОМЛЕНИЯ ═══
-    libnotify-bin \
-    libnotify-dev \
-    notification-daemon \
-    \
+    libnotify-bin
+    notification-daemon
 
     # ═══ ПАРОЛИ ═══
-    gnome-keyring \
-    libsecret-tools \
-    \
+    gnome-keyring
+    libsecret-tools
 
     # ═══ ФОНТЫ ═══
-    fonts-font-awesome \
-    fonts-firacode \
-    fonts-noto-color-emoji \
-    fonts-noto-cjk \
-    \
+    fonts-font-awesome
+    fonts-firacode
+    fonts-noto-color-emoji
 
     # ═══ АРХИВАТОРЫ ═══
-    p7zip-full \
-    unzip \
-    zip \
-    rar \
-    unrar \
-    \
+    p7zip-full
+    unzip
+    zip
+    rar
+    unrar
 
     # ═══ МУЛЬТИМЕДИА ═══
-    ffmpeg \
-    mpv \
-    \
+    ffmpeg
+    mpv
 
     # ═══ ТЕМЫ И УТИЛИТЫ ═══
-    lxappearance \
-    gtk2-engines \
-    gtk3-nocsd \
-    pcmanfm \
-    gvfs-backends \
-    gvfs-fuse \
-    arandr \
-    xfce4-power-manager \
-    \
+    lxappearance
+    gtk2-engines
+    gtk3-nocsd
+    pcmanfm
+    gvfs-backends
+    gvfs-fuse
+    arandr
+    xfce4-power-manager
 
     # ═══ СТАРТОВЫЙ МЕНЕДЖЕР ═══
     emptty
+)
+
+apt install -y "${PACKAGES[@]}"
 
 # ═══════════════════════════════════════════════════════════════
-#  AUTO-CPUFREQ (нет в Debian, ставим вручную)
+#  AUTO-CPUFREQ
 # ═══════════════════════════════════════════════════════════════
 
 echo ""
-echo "⚡ Установка auto-cpufreq из GitHub..."
+echo "⚡ Установка auto-cpufreq..."
 
 if ! command -v auto-cpufreq &> /dev/null; then
     cd /tmp || exit 1
-    git clone https://github.com/AdnanHodzic/auto-cpufreq.git
+    git clone --depth=1 https://github.com/AdnanHodzic/auto-cpufreq.git
     cd auto-cpufreq/
     bash auto-cpufreq-installer
     systemctl enable auto-cpufreq
     systemctl start auto-cpufreq
     cd "$SCRIPT_DIR" || exit 1
-else
-    echo "✅ auto-cpufreq уже установлен"
 fi
 
 # ═══════════════════════════════════════════════════════════════
@@ -190,18 +167,16 @@ echo ""
 echo "⚙️ Включение служб..."
 
 systemctl enable NetworkManager
-systemctl start NetworkManager
-
 systemctl enable bluetooth
-systemctl start bluetooth
-
 systemctl enable tlp
+systemctl enable thermald
+systemctl enable emptty@tty8
 systemctl mask bluetooth
 
-systemctl enable thermald
+systemctl start NetworkManager
+systemctl start bluetooth
+systemctl start tlp
 systemctl start thermald
-
-systemctl enable emptty@tty8
 
 # ═══════════════════════════════════════════════════════════════
 #  XORG КОНФИГ
@@ -240,7 +215,6 @@ echo "⚡ Настройка TLP..."
 mkdir -p /etc/tlp.d
 
 cat > /etc/tlp.d/99-t495.conf << 'EOF'
-# Lenovo ThinkPad T495 (AMD Ryzen 5 3500U)
 CPU_SCALING_GOVERNOR_ON_BAT=schedutil
 CPU_SCALING_GOVERNOR_ON_AC=performance
 RADEON_DPM_PERF_LEVEL_ON_BAT=low
@@ -290,10 +264,6 @@ fi
 
 xdg-user-dirs-update --force
 usermod -a -G video,audio,input,netdev,wheel,fuse "$ORIGINAL_USER" 2>/dev/null || true
-
-# ═══════════════════════════════════════════════════════════════
-#  ФИНАЛ
-# ═══════════════════════════════════════════════════════════════
 
 update-initramfs -u
 

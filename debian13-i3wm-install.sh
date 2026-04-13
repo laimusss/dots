@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# 🔒 Проверка прав запуска
+# 🔒 Проверка прав
 if [ "$(id -u)" -ne 0 ]; then
     echo "❌ Запустите с правами root: sudo bash $0"
     exit 1
@@ -10,21 +10,22 @@ fi
 ORIGINAL_USER="${SUDO_USER:-$(whoami)}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+echo "🔄 Проверка non-free репозитория..."
+if ! grep -q "non-free" /etc/apt/sources.list /etc/apt/sources.list.d/*.list 2>/dev/null; then
+    echo "deb http://deb.debian.org/debian $(cat /etc/debian_version | cut -d. -f1) main non-free 
+non-free-firmware" \
+        >> /etc/apt/sources.list
+    echo "✅ Добавлен non-free репозиторий"
+fi
+
 echo "🔄 Обновление..."
 apt update -y
 
-# ═══════════════════════════════════════════════════════════════
-#  ТОЛЬКО НЕОБХОДИМЫЕ ПАКЕТЫ ДЛЯ THINKPAD T495
-# ═══════════════════════════════════════════════════════════════
-
-echo "📦 Установка пакетов..."
+echo "📦 Установка базовых пакетов..."
 
 apt install -y \
-
-    # ═══ ОСНОВА ═══
-    xserver-xorg-core \
-    xinit \
-    x11-xserver-utils \
+    # ═══ X11 ═══
+    xorg \
     x11-utils \
     xdg-utils \
     xdg-user-dirs \
@@ -33,6 +34,8 @@ apt install -y \
     # ═══ ОКОННЫЙ МЕНЕДЖЕР ═══
     i3 \
     i3lock \
+    i3status \
+    i3status \
     \
 
     # ═══ ТЕРМИНАЛ И УТИЛИТЫ ═══
@@ -50,11 +53,11 @@ apt install -y \
     vim \
     micro \
     dialog \
+    bc \
     \
 
     # ═══ ГРАФИКА AMD VEGA 8 ═══
     xserver-xorg-video-amdgpu \
-    xserver-xorg-video-ati \
     mesa-vulkan-drivers \
     libgl1-mesa-dri \
     libgl1-mesa-glx \
@@ -62,25 +65,26 @@ apt install -y \
     vainfo \
     \
 
-    # ═══ ВВОД (ТАЧПАД) ═══
+    # ═══ ВВОД ═══
     xserver-xorg-input-libinput \
     \
 
-    # ═══ СЕТЬ (Wi-Fi ATHEROS + Ethernet Realtek) ═══
+    # ═══ СЕТЬ (non-free firmware) ═══
     network-manager \
+    network-manager-gnome \
+    nm-applet \
+    iwd \
     firmware-atheros \
     firmware-realtek \
-    iw \
-    iwd \
+    firmware-sof-audio \
     \
 
-    # ═══ АУДИО (Realtek ALC + DSP AMD) ═══
+    # ═══ АУДИО ═══
     pipewire \
     pipewire-pulse \
     wireplumber \
     pavucontrol \
     alsa-utils \
-    firmware-sof-audio \
     \
 
     # ═══ BLUETOOTH ═══
@@ -88,11 +92,10 @@ apt install -y \
     blueman \
     \
 
-    # ═══ ЭНЕРГОПОТРЕБЛЕНИЕ (Ryzen специфика)) ═══
+    # ═══ ЭНЕРГОПОТРЕБЛЕНИЕ ═══
     thermald \
     tlp \
     tlp-rdw \
-    auto-cpufreq \
     cpufrequtils \
     acpi-support \
     acpi \
@@ -103,15 +106,24 @@ apt install -y \
     htop \
     \
 
-    # ═══ ФАЙЛОВАЯ СИСТЕМА ═══
+    # ═══ ФАЙЛЫ ═══
     ntfs-3g \
+    exfat-fuse \
+    exfat-utils \
+    fuse3 \
+    udiskie \
     \
 
-    # ═══ ЯРКОСТЬ ЭКРАНА ═══
+    # ═══ ЯРКОСТЬ ═══
     brightnessctl \
-    light \
     \
-    
+
+    # ═══ УВЕДОМЛЕНИЯ ═══
+    libnotify-bin \
+    libnotify-dev \
+    notification-daemon \
+    \
+
     # ═══ ПАРОЛИ ═══
     gnome-keyring \
     libsecret-tools \
@@ -120,13 +132,16 @@ apt install -y \
     # ═══ ФОНТЫ ═══
     fonts-font-awesome \
     fonts-firacode \
-    fonts-noto \
+    fonts-noto-color-emoji \
+    fonts-noto-cjk \
     \
 
     # ═══ АРХИВАТОРЫ ═══
     p7zip-full \
     unzip \
     zip \
+    rar \
+    unrar \
     \
 
     # ═══ МУЛЬТИМЕДИА ═══
@@ -134,16 +149,38 @@ apt install -y \
     mpv \
     \
 
-    # ═══ ТЕМЫ И ИКОНКИ ═══
+    # ═══ ТЕМЫ И УТИЛИТЫ ═══
     lxappearance \
+    gtk2-engines \
+    gtk3-nocsd \
     pcmanfm \
     gvfs-backends \
+    gvfs-fuse \
     arandr \
     xfce4-power-manager \
     \
 
     # ═══ СТАРТОВЫЙ МЕНЕДЖЕР ═══
     emptty
+
+# ═══════════════════════════════════════════════════════════════
+#  AUTO-CPUFREQ (нет в Debian, ставим вручную)
+# ═══════════════════════════════════════════════════════════════
+
+echo ""
+echo "⚡ Установка auto-cpufreq из GitHub..."
+
+if ! command -v auto-cpufreq &> /dev/null; then
+    cd /tmp || exit 1
+    git clone https://github.com/AdnanHodzic/auto-cpufreq.git
+    cd auto-cpufreq/
+    bash auto-cpufreq-installer
+    systemctl enable auto-cpufreq
+    systemctl start auto-cpufreq
+    cd "$SCRIPT_DIR" || exit 1
+else
+    echo "✅ auto-cpufreq уже установлен"
+fi
 
 # ═══════════════════════════════════════════════════════════════
 #  СЛУЖБЫ
@@ -159,22 +196,19 @@ systemctl enable bluetooth
 systemctl start bluetooth
 
 systemctl enable tlp
-systemctl mask bluetooth    # маска для экономии батареи
+systemctl mask bluetooth
 
 systemctl enable thermald
 systemctl start thermald
 
-systemctl enable auto-cpufreq
-systemctl start auto-cpufreq
-
 systemctl enable emptty@tty8
 
 # ═══════════════════════════════════════════════════════════════
-#  XORG КОНФИГ ДЛЯ AMD VEGA 8
+#  XORG КОНФИГ
 # ═══════════════════════════════════════════════════════════════
 
 echo ""
-echo "🖥️ Настройка Xorg для AMD..."
+echo "🖥️ Настройка Xorg..."
 
 mkdir -p /etc/X11/xorg.conf.d
 
@@ -187,8 +221,17 @@ Section "Device"
 EndSection
 EOF
 
+cat > /etc/X11/xorg.conf.d/30-keyboard.conf << 'EOF'
+Section "InputClass"
+    Identifier "keyboard defaults"
+    MatchIsKeyboard "on"
+    Option "XkbLayout" "us,ru"
+    Option "XkbOptions" "grp:alt_shift_toggle"
+EndSection
+EOF
+
 # ═══════════════════════════════════════════════════════════════
-#  TLP КОНФИГ ДЛЯ AMD RYZEN
+#  TLP КОНФИГ
 # ═══════════════════════════════════════════════════════════════
 
 echo ""
@@ -203,7 +246,6 @@ CPU_SCALING_GOVERNOR_ON_AC=performance
 RADEON_DPM_PERF_LEVEL_ON_BAT=low
 RADEON_DPM_PERF_LEVEL_ON_AC=auto
 SATA_ALPM_ON_BAT=min_power
-WIFI_PWR_ON_BAT=1
 USB_AUTOSUSPEND=1
 EOF
 
@@ -219,14 +261,12 @@ echo "🎨 Установка тем..."
 USER_HOME="/home/$ORIGINAL_USER"
 [ "$ORIGINAL_USER" = "root" ] && USER_HOME="/root"
 
-# Themes
 mkdir -p "$USER_HOME/.themes"
 cd "$USER_HOME/.themes" || exit 1
 git clone --depth=1 https://github.com/vinceliuice/Orchis-theme.git
 cd Orchis-theme/
 bash ./install.sh -c dark -s compact --tweaks dracula --round 1
 
-# Icons
 cd "$USER_HOME" || exit 1
 mkdir -p "$USER_HOME/.icons"
 cd "$USER_HOME/.icons" || exit 1
@@ -248,11 +288,8 @@ if [ -d "$SCRIPT_DIR/.config" ]; then
     chown -R "$ORIGINAL_USER:$ORIGINAL_USER" "$USER_HOME/.config"
 fi
 
-# Пользовательские директории
 xdg-user-dirs-update --force
-
-# Права
-usermod -a -G video,audio,input,netdev,wheel "$ORIGINAL_USER" 2>/dev/null || true
+usermod -a -G video,audio,input,netdev,wheel,fuse "$ORIGINAL_USER" 2>/dev/null || true
 
 # ═══════════════════════════════════════════════════════════════
 #  ФИНАЛ
@@ -262,5 +299,5 @@ update-initramfs -u
 
 echo ""
 echo "╔════════════════════════════════════════════════╗"
-echo "║  ✅ Готово! Реbooted: sudo reboot             ║"
+echo "║  ✅ Готово! Ребут: sudo reboot                ║"
 echo "╚════════════════════════════════════════════════╝"

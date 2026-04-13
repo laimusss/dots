@@ -1,0 +1,271 @@
+exec --no-startup-id ~/set_once_i3.sh
+
+# source is available here:
+# https://raw.githubusercontent.com/endeavouros-team/endeavouros-i3wm-setup/master/.config/i3/config
+# iconic font icon search: https://fontawesome.com/v4.7/cheatsheet/
+
+#######################
+# config starts here: #
+#######################
+
+# Быстрый доступ к конфигурации i3
+bindsym $mod+c exec alacritty -e micro ~/.config/i3/config
+bindsym $mod+p exec alacritty -e micro ~/.config/polybar/config
+
+# Смена раскладки клавиатуры
+exec --no-startup-id setxkbmap -model pc105 -layout us,ru -option grp:alt_shift_toggle
+
+# Шрифт надписей
+font pango: Noto Sans Bold 10
+
+# Установка клавиши "Супер" (alt = Mod1)
+set $mod Mod4
+
+#####################
+# workspace layout: #
+#####################
+
+workspace_layout default
+
+##############################
+# Опции окон: #
+##############################
+
+#border indicator on windows:
+hide_edge_borders smart
+
+# Отключение заголовка окна
+for_window [class="^.*"] border pixel 3
+
+# Цвет рамки активного окна
+client.focused #4b3d71 #4b3d71 #4b3d71 #4b3d71 #4b3d71
+
+# Don’t focus window upon opening
+no_focus [window_role="pop-up"]
+
+# Popups during fullscreen mode
+popup_during_fullscreen smart
+
+# Automatic back-and-forth when switching to the current workspace
+workspace_auto_back_and_forth yes
+
+# Focus on window activation
+focus_on_window_activation urgent
+
+# i3 lock screen
+bindsym $mod+l exec --no-startup-id i3lock -c 37272e -t
+
+#####################
+# Отступы (гаппсы): #
+#####################
+
+# Set inner/outer gaps
+gaps inner 10
+gaps outer 0
+
+# Use Mouse+$mod to drag floating windows to their wanted position
+floating_modifier $mod
+
+# Переключение рабочих мест
+bindsym $mod+1    workspace  $ws1
+bindsym $mod+2    workspace  $ws2
+bindsym $mod+3    workspace  $ws3
+bindsym $mod+4    workspace  $ws4
+bindsym $mod+5    workspace  $ws5
+bindsym $mod+6    workspace  $ws6
+bindsym $mod+7    workspace  $ws7
+bindsym $mod+8    workspace  $ws8
+bindsym $mod+9    workspace  $ws9
+bindsym $mod+0    workspace  $ws10
+
+# Переместить на рабочее место
+bindsym $mod+Shift+1    move container to workspace  $ws1
+bindsym $mod+Shift+2    move container to workspace  $ws2
+bindsym $mod+Shift+3    move container to workspace  $ws3
+bindsym $mod+Shift+4    move container to workspace  $ws4
+bindsym $mod+Shift+5    move container to workspace  $ws5
+bindsym $mod+Shift+6    move container to workspace  $ws6
+bindsym $mod+Shift+7    move container to workspace  $ws7
+bindsym $mod+Shift+8    move container to workspace  $ws8
+bindsym $mod+Shift+9    move container to workspace  $ws9
+bindsym $mod+Shift+0    move container to workspace  $ws10
+
+############################
+# Изменение размеров окна: #
+############################
+
+mode "resize" {
+
+        bindsym Left resize shrink width 10 px or 10 ppt
+        bindsym Down resize grow height 10 px or 10 ppt
+        bindsym Up resize shrink height 10 px or 10 ppt
+        bindsym Right resize grow width 10 px or 10 ppt
+
+# back to normal: Enter
+        bindsym Return mode "default"
+}
+
+bindsym $mod+r mode "resize"
+
+#####################
+# Сочетания клавиш: #
+#####################
+
+# Терминал
+bindsym $mod+Return exec alacritty
+
+# Закрыть окно
+bindsym $mod+q kill
+
+# Завершить работу
+bindsym $mod+Escape exec ~/.config/rofi/scripts/powermenu
+
+# Перезагрузить конфиг
+bindsym $mod+Shift+c reload
+
+# Перезагрузить i3
+bindsym $mod+Shift+r restart
+
+# Смена фокуса окна приложения:
+bindsym $mod+Left focus left
+bindsym $mod+Down focus down
+bindsym $mod+Up focus up
+bindsym $mod+Right focus right
+
+# Смена положения окна приложения:
+bindsym $mod+Shift+Left move left
+bindsym $mod+Shift+Down move down
+bindsym $mod+Shift+Up move up
+bindsym $mod+Shift+Right move right
+
+# Разделение окон по горизонтали
+bindsym $mod+h split h
+
+# Разделение окон по вертикали
+bindsym $mod+v split v
+
+# Переход в полноэкранный режим
+bindsym $mod+o fullscreen toggle
+
+# Отображение новых приложений вкладками или окнами
+bindsym $mod+t layout tabbed
+bindsym $mod+s layout toggle split
+
+# Вкл\Откл плавающего режима окна
+bindsym $mod+space floating toggle
+
+# Мультимедийные клавиши
+bindsym XF86AudioRaiseVolume exec --no-startup-id pactl set-sink-volume 0 +5%
+bindsym XF86AudioLowerVolume exec --no-startup-id pactl set-sink-volume 0 -5%
+bindsym XF86AudioMute exec --no-startup-id pactl set-sink-mute 0 toggle
+
+# audio control
+bindsym XF86AudioPlay exec playerctl play
+bindsym XF86AudioPause exec playerctl pause
+bindsym XF86AudioNext exec playerctl next
+bindsym XF86AudioPrev exec playerctl previous
+
+##############################
+# Быстрый запуск приложений: #
+##############################
+
+bindsym $mod+w exec /usr/bin/librewolf
+bindsym $mod+f exec /usr/bin/pcmanfm
+bindsym $mod+a exec /usr/bin/alacritty -e mocp
+bindsym $mod+m exec /usr/bin/alacritty -e mc
+bindsym Print exec scrot '%Y-%m-%d-%H:%M:%S-screenshot.png' -e 'mv $f ~/Изображения/'
+
+###########################
+# Поведение рабочих мест: #
+###########################
+
+set $ws1 "1:"
+set $ws2 "2:"
+set $ws3 "3:"
+set $ws4 "4:"
+set $ws5 "5:"
+set $ws6 "6:"
+set $ws7 "7:"
+
+# Привязка программ к рабочим местам:
+assign [class="Alacritty"] $ws1
+assign [class="librewolf-default"] $ws2
+assign [class="Pcmanfm"] $ws3
+assign [class="TelegramDesktop"] $ws4
+assign [class="Claws-mail"] $ws4
+assign [class="Rustdesk"] $ws5
+assign [class="mpv"] $ws6
+assign [class="ONLYOFFICE Desktop Editors"] $ws7
+
+# Автоматический фокус на рабочем месте:
+for_window [class=Alacritty] focus
+for_window [class=librewolf-default] focus
+for_window [class=Pcmanfm] focus
+for_window [class=mpv] focus
+for_window [class=Claws-mail] focus
+for_window [class=Rustdesk] focus
+for_window [class=TelegramDesktop] focus
+for_window [class=DesktopEditors] focus
+
+##############
+# compositor #
+##############
+
+exec_always --no-startup-id picom --config ~/.config/i3/picom.conf
+
+############################
+# Автозагрузка приложений: #
+############################
+
+# Power Manager
+exec --no-startup-id xfce4-power-manager
+
+# num lock activated
+exec --no-startup-id numlockx on
+
+# start a script to setup displays
+exec --no-startup-id ~/.screenlayout/monitor.sh
+
+# set wallpaper
+exec --no-startup-id sleep 1 && feh --bg-fill $HOME/wall.*
+
+# Desktop notifications
+exec --no-startup-id sleep 0.5 && dbus-launch dunst --config $HOME/.config/dunst/dunstrc
+
+##################
+# Системный трей #
+##################
+
+# start blueberry app for managing bluetooth devices from tray:
+exec --no-startup-id blueman-tray
+
+# networkmanager-applet
+exec --no-startup-id nm-applet
+
+##########################
+# Правила плавающих окон #
+##########################
+
+# set floating (nontiling) for apps needing it
+for_window [class="Yad" instance="yad"] floating enable
+for_window [class="Galculator" instance="galculator"] floating enable
+for_window [class="Blueberry.py" instance="blueberry.py"] floating enable
+for_window [class="Xsane" instance="xsane"] floating enable
+for_window [class="Pavucontrol" instance="pavucontrol"] floating enable
+for_window [class="qt5ct" instance="qt5ct"] floating enable
+for_window [class="Bluetooth-sendto" instance="bluetooth-sendto"] floating enable
+for_window [class="Pamac-manager"] floating enable
+for_window [window_role="About"] floating enable
+
+#########
+# Rofi: #
+#########
+
+bindsym ctrl+space exec rofi -modi drun -show drun \
+                -config ~/.config/rofi/rofidmenu.rasi
+
+############
+# Polybar: #
+############
+
+exec_always --no-startup-id $HOME/.config/polybar/launch.sh

@@ -32,7 +32,7 @@ apt install -y \
     curl ffmpeg mpv micro dialog
 
 echo "🔌 Включение и запуск служб..."
-systemctl enable --now bluetooth pipewire-pulse wireplumber emptty@tty8
+systemctl enable --now pipewire-pulse wireplumber emptty@tty8
 
 echo "📁 Настройка пользовательских директорий..."
 if [ "$ORIGINAL_USER" = "root" ]; then

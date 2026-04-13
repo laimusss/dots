@@ -3,112 +3,264 @@ set -euo pipefail
 
 # 🔒 Проверка прав запуска
 if [ "$(id -u)" -ne 0 ]; then
-    echo "❌ Пожалуйста, запустите скрипт с правами root: sudo bash $0"
+    echo "❌ Запустите с правами root: sudo bash $0"
     exit 1
 fi
 
-# Определяем оригинального пользователя (если запуск через sudo)
 ORIGINAL_USER="${SUDO_USER:-$(whoami)}"
-
-# Определяем директорию, где находится сам скрипт
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-echo "🔄 Обновление списков пакетов..."
+echo "🔄 Обновление..."
 apt update -y
 
+# ═══════════════════════════════════════════════════════════════
+#  ТОЛЬКО НЕОБХОДИМЫЕ ПАКЕТЫ ДЛЯ THINKPAD T495
+# ═══════════════════════════════════════════════════════════════
+
 echo "📦 Установка пакетов..."
+
 apt install -y \
+
+    # ═══ ОСНОВА ═══
     xserver-xorg-core \
     xinit \
-    xutils \
+    x11-xserver-utils \
+    x11-utils \
+    xdg-utils \
+    xdg-user-dirs \
+    \
+
+    # ═══ ОКОННЫЙ МЕНЕДЖЕР ═══
     i3 \
+    i3lock \
+    \
+
+    # ═══ ТЕРМИНАЛ И УТИЛИТЫ ═══
+    alacritty \
+    rofi \
+    dunst \
+    polybar \
+    picom \
+    scrot \
+    feh \
+    playerctl \
+    curl \
+    wget \
+    git \
+    vim \
+    micro \
+    dialog \
+    \
+
+    # ═══ ГРАФИКА AMD VEGA 8 ═══
+    xserver-xorg-video-amdgpu \
+    xserver-xorg-video-ati \
+    mesa-vulkan-drivers \
+    libgl1-mesa-dri \
+    libgl1-mesa-glx \
+    va-driver-all \
+    vainfo \
+    \
+
+    # ═══ ВВОД (ТАЧПАД) ═══
+    xserver-xorg-input-libinput \
+    \
+
+    # ═══ СЕТЬ (Wi-Fi ATHEROS + Ethernet Realtek) ═══
+    network-manager \
+    firmware-atheros \
+    firmware-realtek \
+    iw \
+    iwd \
+    \
+
+    # ═══ АУДИО (Realtek ALC + DSP AMD) ═══
+    pipewire \
+    pipewire-pulse \
+    wireplumber \
+    pavucontrol \
+    alsa-utils \
+    firmware-sof-audio \
+    \
+
+    # ═══ BLUETOOTH ═══
+    bluez \
+    blueman \
+    \
+
+    # ═══ ЭНЕРГОПОТРЕБЛЕНИЕ (Ryzen специфика)) ═══
+    thermald \
+    tlp \
+    tlp-rdw \
+    auto-cpufreq \
+    cpufrequtils \
+    acpi-support \
+    acpi \
+    \
+
+    # ═══ МОНИТОРИНГ ═══
+    lm-sensors \
+    htop \
+    \
+
+    # ═══ ФАЙЛОВАЯ СИСТЕМА ═══
+    ntfs-3g \
+    \
+
+    # ═══ ЯРКОСТЬ ЭКРАНА ═══
+    brightnessctl \
+    light \
+    \
+    
+    # ═══ ПАРОЛИ ═══
+    gnome-keyring \
+    libsecret-tools \
+    \
+
+    # ═══ ФОНТЫ ═══
+    fonts-font-awesome \
+    fonts-firacode \
+    fonts-noto \
+    \
+
+    # ═══ АРХИВАТОРЫ ═══
+    p7zip-full \
+    unzip \
+    zip \
+    \
+
+    # ═══ МУЛЬТИМЕДИА ═══
+    ffmpeg \
+    mpv \
+    \
+
+    # ═══ ТЕМЫ И ИКОНКИ ═══
     lxappearance \
     pcmanfm \
-    gvfs-backends arandr xfce4-power-manager \
-    alacritty \
-    pipewire pipewire-pulse wireplumber pavucontrol \
-    bluez \
-    feh \
-    rofi dunst polybar picom playerctl scrot xdg-user-dirs \
-    fonts-font-awesome fonts-firacode \
-    emptty \
-    curl ffmpeg mpv micro dialog
+    gvfs-backends \
+    arandr \
+    xfce4-power-manager \
+    \
 
-echo "🔌 Включение и запуск служб..."
+    # ═══ СТАРТОВЫЙ МЕНЕДЖЕР ═══
+    emptty
+
+# ═══════════════════════════════════════════════════════════════
+#  СЛУЖБЫ
+# ═══════════════════════════════════════════════════════════════
+
+echo ""
+echo "⚙️ Включение служб..."
+
+systemctl enable NetworkManager
+systemctl start NetworkManager
+
+systemctl enable bluetooth
+systemctl start bluetooth
+
+systemctl enable tlp
+systemctl mask bluetooth    # маска для экономии батареи
+
+systemctl enable thermald
+systemctl start thermald
+
+systemctl enable auto-cpufreq
+systemctl start auto-cpufreq
+
 systemctl enable emptty@tty8
 
-echo "📁 Настройка пользовательских директорий..."
-if [ "$ORIGINAL_USER" = "root" ]; then
-    echo "⚠️  Предупреждение: Скрипт запущен напрямую от root. Стандартные папки будут созданы в 
-/root."
-    xdg-user-dirs-update --force
-else
-    echo "👤 Создание директорий для пользователя: $ORIGINAL_USER"
-    sudo -u "$ORIGINAL_USER" xdg-user-dirs-update --force
-fi
+# ═══════════════════════════════════════════════════════════════
+#  XORG КОНФИГ ДЛЯ AMD VEGA 8
+# ═══════════════════════════════════════════════════════════════
 
-# 🎨 Установка тем и иконок
 echo ""
-echo "🎨 Установка тем и иконок..."
+echo "🖥️ Настройка Xorg для AMD..."
 
-# === THEMES ===
-themes_dir="/home/$ORIGINAL_USER/.themes"
+mkdir -p /etc/X11/xorg.conf.d
 
-if [ ! -d "$themes_dir" ]; then
-    echo "📁 Создание директории тем: $themes_dir"
-    mkdir -p "$themes_dir"
-else
-    echo "✅ Директория $themes_dir уже существует."
-fi
+cat > /etc/X11/xorg.conf.d/20-amdgpu.conf << 'EOF'
+Section "Device"
+    Identifier "AMD Graphics"
+    Driver "amdgpu"
+    Option "TearFree" "true"
+    Option "DRI" "3"
+EndSection
+EOF
 
-echo "⬇️  Клонирование репозитория Orchis theme..."
-cd "$themes_dir" || exit 1
+# ═══════════════════════════════════════════════════════════════
+#  TLP КОНФИГ ДЛЯ AMD RYZEN
+# ═══════════════════════════════════════════════════════════════
+
+echo ""
+echo "⚡ Настройка TLP..."
+
+mkdir -p /etc/tlp.d
+
+cat > /etc/tlp.d/99-t495.conf << 'EOF'
+# Lenovo ThinkPad T495 (AMD Ryzen 5 3500U)
+CPU_SCALING_GOVERNOR_ON_BAT=schedutil
+CPU_SCALING_GOVERNOR_ON_AC=performance
+RADEON_DPM_PERF_LEVEL_ON_BAT=low
+RADEON_DPM_PERF_LEVEL_ON_AC=auto
+SATA_ALPM_ON_BAT=min_power
+WIFI_PWR_ON_BAT=1
+USB_AUTOSUSPEND=1
+EOF
+
+tlp start
+
+# ═══════════════════════════════════════════════════════════════
+#  ТЕМЫ И ИКОНКИ
+# ═══════════════════════════════════════════════════════════════
+
+echo ""
+echo "🎨 Установка тем..."
+
+USER_HOME="/home/$ORIGINAL_USER"
+[ "$ORIGINAL_USER" = "root" ] && USER_HOME="/root"
+
+# Themes
+mkdir -p "$USER_HOME/.themes"
+cd "$USER_HOME/.themes" || exit 1
 git clone --depth=1 https://github.com/vinceliuice/Orchis-theme.git
-cd Orchis-theme/ || exit 1
+cd Orchis-theme/
 bash ./install.sh -c dark -s compact --tweaks dracula --round 1
 
-# Возвращаемся в домашнюю директорию
-cd /home/"$ORIGINAL_USER" || exit 1
-
-# === ICONS ===
-icons_dir="/home/$ORIGINAL_USER/.icons"
-
-if [ ! -d "$icons_dir" ]; then
-    echo "📁 Создание директории иконок: $icons_dir"
-    mkdir -p "$icons_dir"
-else
-    echo "✅ Директория $icons_dir уже существует."
-fi
-
-echo "⬇️  Клонирование репозитория Tela-circle icons..."
-cd "$icons_dir" || exit 1
+# Icons
+cd "$USER_HOME" || exit 1
+mkdir -p "$USER_HOME/.icons"
+cd "$USER_HOME/.icons" || exit 1
 git clone --depth=1 https://github.com/vinceliuice/Tela-circle-icon-theme.git
-cd Tela-circle-icon-theme/ || exit 1
+cd Tela-circle-icon-theme/
 bash ./install.sh dracula -c
 
-# Возвращаемся в домашнюю директорию
-cd /home/"$ORIGINAL_USER" || exit 1
+cd "$USER_HOME" || exit 1
+
+# ═══════════════════════════════════════════════════════════════
+#  КОНФИГИ
+# ═══════════════════════════════════════════════════════════════
 
 echo ""
-echo "🎉 Themes & Icons установлены!"
-
-# 📋 Копирование конфигурационных файлов
-echo ""
-echo "📋 Копирование конфигурационных файлов..."
+echo "📋 Копирование конфигов..."
 
 if [ -d "$SCRIPT_DIR/.config" ]; then
-    echo "📂 Найдена папка .config в директории скрипта: $SCRIPT_DIR/.config"
-    if [ "$ORIGINAL_USER" = "root" ]; then
-        cp -rf "$SCRIPT_DIR/.config" /root/
-        echo "✅ Конфигурации скопированы в /root/.config/"
-    else
-        cp -rf "$SCRIPT_DIR/.config" /home/"$ORIGINAL_USER"/
-        echo "✅ Конфигурации скопированы в /home/$ORIGINAL_USER/.config/"
-    fi
-else
-    echo "⚠️  Папка .config не найдена в директории скрипта: $SCRIPT_DIR"
-    echo "   Пропускаем копирование конфигураций."
+    cp -rf "$SCRIPT_DIR/.config" "$USER_HOME/"
+    chown -R "$ORIGINAL_USER:$ORIGINAL_USER" "$USER_HOME/.config"
 fi
 
+# Пользовательские директории
+xdg-user-dirs-update --force
+
+# Права
+usermod -a -G video,audio,input,netdev,wheel "$ORIGINAL_USER" 2>/dev/null || true
+
+# ═══════════════════════════════════════════════════════════════
+#  ФИНАЛ
+# ═══════════════════════════════════════════════════════════════
+
+update-initramfs -u
+
 echo ""
-echo "✅ Установка успешно завершена!"
+echo "╔════════════════════════════════════════════════╗"
+echo "║  ✅ Готово! Реbooted: sudo reboot             ║"
+echo "╚════════════════════════════════════════════════╝"

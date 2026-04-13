@@ -127,23 +127,6 @@ PACKAGES=(
 apt install -y "${PACKAGES[@]}"
 
 # ═══════════════════════════════════════════════════════════════
-#  AUTO-CPUFREQ
-# ═══════════════════════════════════════════════════════════════
-
-echo ""
-echo "⚡ Установка auto-cpufreq..."
-
-if ! command -v auto-cpufreq &> /dev/null; then
-    cd /tmp || exit 1
-    git clone --depth=1 https://github.com/AdnanHodzic/auto-cpufreq.git
-    cd auto-cpufreq/
-    bash auto-cpufreq-installer
-    systemctl enable auto-cpufreq
-    systemctl start auto-cpufreq
-    cd "$SCRIPT_DIR" || exit 1
-fi
-
-# ═══════════════════════════════════════════════════════════════
 #  СЛУЖБЫ
 # ═══════════════════════════════════════════════════════════════
 

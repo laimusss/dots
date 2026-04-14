@@ -1,12 +1,10 @@
 #!/bin/bash
 set -e
 
-# Определяем HOME (на случай если запущено через sudo)
-export HOME="$(eval echo ~$(whoami))"
-
 # Удаление пакетов
 sudo apt purge -y celluloid hypnotix rhythmbox* drawing pix simple-scan firefox* thunderbird* transmission* thingy sticky libreoffice* onboard warpinator && sudo apt install -y sassc
 
+# Очистка
 sudo apt autoremove -y && sudo apt autoclean
 
 echo ""

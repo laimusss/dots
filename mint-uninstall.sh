@@ -5,7 +5,7 @@ set -e
 export HOME="$(eval echo ~$(whoami))"
 
 # Удаление пакетов
-sudo apt purge -y celluloid hypnotix rhythmbox* drawing pix simple-scan firefox* thunderbird* transmission* thingy sticky libreoffice* onboard warpinator
+sudo apt purge -y celluloid hypnotix rhythmbox* drawing pix simple-scan firefox* thunderbird* transmission* thingy sticky libreoffice* onboard warpinator && sudo apt install -y sassc
 
 sudo apt autoremove -y && sudo apt autoclean
 

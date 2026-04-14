@@ -9,25 +9,23 @@ sudo apt purge -y celluloid hypnotix rhythmbox* drawing pix simple-scan firefox*
 
 sudo apt autoremove -y && sudo apt autoclean
 
-# Установка темы и иконок
-mkdir -p "${HOME}/.themes"
-mkdir -p "${HOME}/.icons"
+echo ""
+echo "🎨 Установка тем..."
 
-# Тема
-if [ -d "${HOME}/.themes/Orchis-theme" ]; then
-    rm -rf "${HOME}/.themes/Orchis-theme"
-fi
-git clone --depth=1 https://github.com/vinceliuice/Orchis-theme.git 
-"${HOME}/.themes/Orchis-theme" -q
-bash "${HOME}/.themes/Orchis-theme/install.sh" -c dark -s compact --tweaks dracula --round 3 
--q
-rm -rf "${HOME}/.themes/Orchis-theme"
+USER_HOME="/home/$ORIGINAL_USER"
+[ "$ORIGINAL_USER" = "root" ] && USER_HOME="/root"
 
-# Иконки
-if [ -d "${HOME}/.icons/Tela-circle-icon-theme" ]; then
-    rm -rf "${HOME}/.icons/Tela-circle-icon-theme"
-fi
-git clone --depth=1 https://github.com/vinceliuice/Tela-circle-icon-theme.git 
-"${HOME}/.icons/Tela-circle-icon-theme" -q
-bash "${HOME}/.icons/Tela-circle-icon-theme/install.sh" dracula -c -q
-rm -rf "${HOME}/.icons/Tela-circle-icon-theme"
+mkdir -p "$USER_HOME/.themes"
+cd "$USER_HOME/.themes" || exit 1
+git clone --depth=1 https://github.com/vinceliuice/Orchis-theme.git
+cd Orchis-theme/
+bash ./install.sh -c dark -s compact --tweaks dracula --round 1
+
+cd "$USER_HOME" || exit 1
+mkdir -p "$USER_HOME/.icons"
+cd "$USER_HOME/.icons" || exit 1
+git clone --depth=1 https://github.com/vinceliuice/Tela-circle-icon-theme.git
+cd Tela-circle-icon-theme/
+bash ./install.sh dracula -c
+
+cd "$USER_HOME" || exit 1

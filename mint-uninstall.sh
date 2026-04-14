@@ -1,14 +1,8 @@
 #!/bin/bash
 set -e
 
-# Резервная копия пакетов
-dpkg --get-selections > $HOME/packages-list-$(date +%Y%m%d-%H%M%S).txt
-
 # Удаление пакетов
-sudo apt purge -y celluloid hypnotix rhythmbox rhythmbox-plugins drawing pix simple-scan \
-  firefox firefox-locale-* thunderbird thunderbird-locale-* transmission-gtk transmission-cli 
-transmission-common \
-  thingy sticky libreoffice-core libreoffice-common onboard warpinator
+sudo apt purge -y celluloid hypnotix rhythmbox* drawing pix simple-scan firefox* thunderbird* transmission* thingy sticky libreoffice* onboard warpinator
 
 sudo apt autoremove -y && sudo apt autoclean
 

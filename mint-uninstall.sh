@@ -59,6 +59,5 @@ fi
 cd /home/$USER/.icons && git clone --depth=1 https://github.com/vinceliuice/Tela-circle-icon-theme.git && cd Tela-circle-icon-theme/ && bash ./install.sh dracula -c && cd
 
 echo "Themes & Icons Installed!"
-fi
 
 

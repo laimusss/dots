@@ -50,7 +50,6 @@ fi
 # 2. Установка 64-битных драйверов
 echo "[2/3] Установка 64-битных драйверов..."
 sudo apt install -y \
-    firmware-amd-graphics \
     mesa-vulkan-drivers \
     libgl1-mesa-dri \
     libglx-mesa0 \

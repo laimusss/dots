@@ -59,28 +59,6 @@ fi
 cd /home/$USER/.icons && git clone --depth=1 https://github.com/vinceliuice/Tela-circle-icon-theme.git && cd Tela-circle-icon-theme/ && bash ./install.sh dracula -c && cd
 
 echo "Themes & Icons Installed!"
-
-echo ""
-read -p ">>> Установить Ulauncher? (y/n) " choice
-echo ""
-if [ "$choice" == "y" ]; then
-sudo add-apt-repository universe -y && sudo add-apt-repository ppa:agornostal/ulauncher -y && sudo apt update && sudo apt install ulauncher -y && git clone https://github.com/sotsugov/ulauncher-eigen/ \
-  ~/.config/ulauncher/user-themes/eigen-dark
-echo ""
-echo "| Ulauncher установлен"
-else
-echo "| Установка пропущена"
-fi
-
-echo ""
-read -p ">>> Установить Brave Browser? (y/n) " choice
-echo ""
-if [ "$choice" == "y" ]; then
-curl -fsS https://dl.brave.com/install.sh | sh
-echo ""
-echo "| Brave Browser установлен"
-else
-echo "| Установка пропущена"
 fi
 
 
